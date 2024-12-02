@@ -1,2 +1,2 @@
 chardet
-transformers
+tensorflow
