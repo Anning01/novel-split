@@ -48,7 +48,7 @@ python nlp.py --input novel.txt --output chapters/
 
 ## 输出结果
 
-### 1. 按章节分文件
+### 1. 按章节分文件 (nlp.py)
 
 ```bash
 chapters/
@@ -58,7 +58,7 @@ chapters/
 ```
 
 
-### 2. 索引拆分（重复章节索引会合并）
+### 2. 索引拆分（main.py 重复章节索引会合并）
 ```bash
 chapters/
 ├── 1.txt
