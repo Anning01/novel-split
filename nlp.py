@@ -69,6 +69,7 @@ def split_txt_index_nlp(input_file, output_path, classifier) -> None:
     chapter_index = 0  # Chapter index for sequential verification
     instance_index = 0
     my_pattern = Pattern()
+    has_found_chapter = False  # 新增标志位
 
     FILE_ENCODING = detect_file_encoding(input_file)
     with open(input_file, encoding=FILE_ENCODING) as f:
@@ -84,6 +85,12 @@ def split_txt_index_nlp(input_file, output_path, classifier) -> None:
 
                 current_chapter_match, instance_index = processing_priority(line, instance_index)
 
+                # 判断是否为第xx章格式
+                is_chapter_format = re.search(r'第\d+章', line) is not None
+
+                if has_found_chapter and not is_chapter_format:
+                    continue  # 已经找到第xx章格式的章节标题，忽略非第xx章格式的匹配
+
                 if current_chapter_match == chapter_index + 1:
                     sequential_bonus = 0.1  # Give a small boost for correct sequential order
                 final_score = chapter_score + sequential_bonus
@@ -92,6 +99,8 @@ def split_txt_index_nlp(input_file, output_path, classifier) -> None:
                 print(final_score)
                 # Check if it has been classified as "Chapter"
                 if final_score > 0.7:
+                    if is_chapter_format:
+                        has_found_chapter = True  # 设置标志位
                     print(f"找到章节标题: {line}")
                     chapter = current_chapter_match
                     chapter_index = chapter  # Update the expected chapter index
@@ -131,6 +140,7 @@ def split_txt_title_nlp(input_file, output_path, classifier) -> None:
     chapter_index = 0  # Chapter index for sequential verification
     instance_index = 0
     my_pattern = Pattern()
+    has_found_chapter = False  # 新增标志位
 
     FILE_ENCODING = detect_file_encoding(input_file)
     with open(input_file, encoding=FILE_ENCODING) as f:
@@ -147,6 +157,12 @@ def split_txt_title_nlp(input_file, output_path, classifier) -> None:
 
                 current_chapter_match, instance_index = processing_priority(line, instance_index)
 
+                # 判断是否为第xx章格式
+                is_chapter_format = re.search(r'第\d+章', line) is not None
+
+                if has_found_chapter and not is_chapter_format:
+                    continue  # 已经找到第xx章格式的章节标题，忽略非第xx章格式的匹配
+
                 # Apply sequential bonus if chapter index is in expected order
                 if current_chapter_match == chapter_index + 1:
                     sequential_bonus = 0.1  # Give a small boost for correct sequential order
@@ -158,13 +174,15 @@ def split_txt_title_nlp(input_file, output_path, classifier) -> None:
                 # print(final_score)
                 # Check if it has been classified as "Chapter"
                 if final_score > 0.7:
+                    if is_chapter_format:
+                        has_found_chapter = True  # 设置标志位
                     print(f"找到章节标题: {chapter}")
                     chapter_index += 1  # Update the expected chapter index
                     # Find new Chapter
                     if save_file is not None:
                         save_file.close()
                     save_file_path = os.path.join(output_path, "temp")
-                    save_file_path = os.path.join(save_file_path, f"{chapter_index}{chapter}.txt")
+                    save_file_path = os.path.join(save_file_path, f"{chapter}.txt")
                     save_file = open(save_file_path, mode='a', encoding=FILE_ENCODING)
                     save_file.write(line + "\n")
                 else:
@@ -236,4 +254,3 @@ if __name__ == '__main__':
     input_file = args.input
     output_path = args.output
     split_txt_title_nlp(input_file=input_file, output_path=output_path, classifier=classifier)
-
